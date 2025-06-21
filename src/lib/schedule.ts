@@ -199,7 +199,7 @@ const woodsideSchedule: Record<DayCategory, Record<Direction, Schedule>> = {
 
 const generateTimes = (start: string, end: string, interval: number): string[] => {
   const times: string[] = [];
-  let currentTime = new Date(`1970-01-01T${start}:00`);
+  const currentTime = new Date(`1970-01-01T${start}:00`);
   const endTime = new Date(`1970-01-01T${end}:00`);
 
   while (currentTime <= endTime) {

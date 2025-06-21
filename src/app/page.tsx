@@ -51,22 +51,22 @@ export default function Home() {
     return "weekday";
   };
   
-  const getDepartureTimes = (now: Date, forDate: Date, route: Route): string[] => {
-    const dayCategory = getDayCategory(forDate);
-    const scheduleForDay = schedules[route.name][dayCategory]?.[route.direction];
-    if (!scheduleForDay) return [];
-
-    let allTimes: string[] = [];
-    Object.values(scheduleForDay).forEach(period => {
-        allTimes.push(...period.times);
-    });
-    
-    allTimes.sort();
-    
-    return allTimes;
-  }
-
   useEffect(() => {
+    const getDepartureTimes = (now: Date, forDate: Date, route: Route): string[] => {
+      const dayCategory = getDayCategory(forDate);
+      const scheduleForDay = schedules[route.name][dayCategory]?.[route.direction];
+      if (!scheduleForDay) return [];
+
+      const allTimes: string[] = [];
+      Object.values(scheduleForDay).forEach(period => {
+          allTimes.push(...period.times);
+      });
+      
+      allTimes.sort();
+      
+      return allTimes;
+    };
+
     const calculateNextFerry = () => {
       const now = new Date();
       
