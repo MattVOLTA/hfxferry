@@ -1,103 +1,243 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Image from "next/image";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { schedules, DayCategory, RouteName, Direction } from "@/lib/schedule";
+
+type Route = {
+  name: RouteName;
+  direction: Direction;
+};
 
 export default function Home() {
+  const [route, setRoute] = useState<Route>({
+    name: "alderney",
+    direction: "toHalifax",
+  });
+  const [nextFerry, setNextFerry] = useState<string>("");
+  const [minutesUntil, setMinutesUntil] = useState<number | null>(null);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+    const savedRouteName = localStorage.getItem("ferryRouteName") as RouteName;
+    const savedDirection = localStorage.getItem("ferryDirection") as Direction;
+    if (savedRouteName && savedDirection) {
+      setRoute({ name: savedRouteName, direction: savedDirection });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isClient) {
+      localStorage.setItem("ferryRouteName", route.name);
+      localStorage.setItem("ferryDirection", route.direction);
+    }
+  }, [route, isClient]);
+
+  const getDayCategory = (date: Date): DayCategory => {
+    const day = date.getDay();
+    // Basic holiday check - can be expanded
+    // For now, only checking for a few major ones.
+    const holidays = [
+      "01-01", // New Year's Day
+      "12-25", // Christmas Day
+      "12-26", // Boxing Day
+    ];
+    const dateString = `${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+    if (holidays.includes(dateString)) return "holiday";
+    if (day === 0) return "sunday";
+    if (day === 6) return "saturday";
+    return "weekday";
+  };
+  
+  const getDepartureTimes = (now: Date, forDate: Date, route: Route): string[] => {
+    const dayCategory = getDayCategory(forDate);
+    const scheduleForDay = schedules[route.name][dayCategory]?.[route.direction];
+    if (!scheduleForDay) return [];
+
+    let allTimes: string[] = [];
+    Object.values(scheduleForDay).forEach(period => {
+        allTimes.push(...period.times);
+    });
+    
+    allTimes.sort();
+    
+    return allTimes;
+  }
+
+  useEffect(() => {
+    const calculateNextFerry = () => {
+      const now = new Date();
+      
+      let departureTimes = getDepartureTimes(now, now, route);
+
+      let nextDeparture = departureTimes.find(time => {
+        const [hours, minutes] = time.split(":").map(Number);
+        const departureTime = new Date(now);
+        departureTime.setHours(hours, minutes, 0, 0);
+        return departureTime > now;
+      });
+
+      let nextDepartureDate = new Date();
+
+      if (!nextDeparture) {
+        // No more ferries today, check tomorrow
+        const tomorrow = new Date(now);
+        tomorrow.setDate(now.getDate() + 1);
+        departureTimes = getDepartureTimes(now, tomorrow, route);
+        if (departureTimes.length > 0) {
+            nextDeparture = departureTimes[0];
+            nextDepartureDate = tomorrow;
+        }
+      }
+      
+      if (nextDeparture) {
+        setNextFerry(nextDeparture);
+        const [hours, minutes] = nextDeparture.split(":").map(Number);
+        const departureTime = new Date(nextDepartureDate);
+        departureTime.setHours(hours, minutes, 0, 0);
+        
+        const diff = departureTime.getTime() - now.getTime();
+        setMinutesUntil(Math.ceil(diff / (1000 * 60)));
+
+      } else {
+        setNextFerry("No service");
+        setMinutesUntil(null);
+      }
+    };
+
+    calculateNextFerry();
+    const interval = setInterval(calculateNextFerry, 1000); // Update every second
+
+    return () => clearInterval(interval);
+  }, [route, isClient]);
+
+
+  if (!isClient) {
+    return null; 
+  }
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
+    <main 
+      className="flex flex-col"
+      style={{ 
+        backgroundColor: '#ffffff', 
+        color: '#01558E',
+        height: '100dvh', // Dynamic viewport height - excludes browser UI
+        paddingTop: 'env(safe-area-inset-top, 0px)',
+        paddingBottom: 'env(safe-area-inset-bottom, 0px)'
+      }}
+    >
+      {/* Fixed Header - Always at top */}
+      <header className="flex-shrink-0 w-full" style={{ paddingTop: '20px', paddingBottom: '10px' }}>
         <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
+          src="/halifax-regional-municipality-logo-png_seeklogo-504971 (1).png"
+          alt="Halifax Regional Municipality Logo"
           width={180}
-          height={38}
+          height={68}
+          className="mx-auto sm:w-[220px] sm:h-[83px]"
           priority
         />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+      </header>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      {/* Scrollable Content - Takes remaining space */}
+      <div className="flex-1 flex flex-col items-center justify-center text-center px-4 overflow-y-auto min-h-0">
+        <h1 className="text-2xl sm:text-3xl font-bold" style={{ color: '#01558E' }}>
+          {route.name === "alderney" ? "Alderney" : "Woodside"} Ferry
+        </h1>
+        <p className="text-sm sm:text-base mt-1" style={{ color: '#01558E' }}>
+          {route.direction === "toHalifax"
+            ? "to Halifax Ferry Terminal"
+            : `from Halifax to ${
+                route.name === "alderney" ? "Alderney" : "Woodside"
+              }`}
+        </p>
+
+        <div className="mt-2 sm:mt-4 text-center">
+            {minutesUntil !== null ? (
+                <>
+                    <p className="text-base sm:text-lg" style={{ color: '#01558E' }}>Next departure in</p>
+                    <p className="text-8xl sm:text-9xl font-bold tracking-tighter -my-1" style={{ color: '#01558E' }}>
+                        {minutesUntil}
+                    </p>
+                    <p className="text-base sm:text-lg" style={{ color: '#01558E' }}>minutes</p>
+                    <p className="text-sm sm:text-base mt-1" style={{ color: '#01558E' }}>at {nextFerry}</p>
+                </>
+            ) : (
+                <p className="text-xl sm:text-2xl font-bold" style={{ color: '#dc2626' }}>
+                    No more ferries today.
+                </p>
+            )}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+      </div>
+
+      {/* Fixed Footer - Always at bottom */}
+      <footer className="flex-shrink-0 flex flex-col items-center space-y-3 w-full max-w-xs mx-auto px-4 pb-6">
+          <ToggleGroup
+            type="single"
+            value={route.name}
+            onValueChange={(value: RouteName) => {
+              if (value) setRoute((prev) => ({ ...prev, name: value }));
+            }}
+            className="w-full"
+          >
+            <ToggleGroupItem 
+              value="alderney" 
+              className="w-1/2 text-sm sm:text-base py-3"
+              style={{ 
+                borderColor: '#01558E', 
+                color: route.name === "alderney" ? 'white' : '#01558E',
+                backgroundColor: route.name === "alderney" ? '#01558E' : 'transparent'
+              }}
+            >
+              Alderney
+            </ToggleGroupItem>
+            <ToggleGroupItem 
+              value="woodside" 
+              className="w-1/2 text-sm sm:text-base py-3"
+              style={{ 
+                borderColor: '#01558E', 
+                color: route.name === "woodside" ? 'white' : '#01558E',
+                backgroundColor: route.name === "woodside" ? '#01558E' : 'transparent'
+              }}
+            >
+              Woodside
+            </ToggleGroupItem>
+          </ToggleGroup>
+
+          <ToggleGroup
+            type="single"
+            value={route.direction}
+            onValueChange={(value: Direction) => {
+              if (value) setRoute((prev) => ({ ...prev, direction: value }));
+            }}
+            className="w-full"
+          >
+            <ToggleGroupItem 
+              value="toHalifax" 
+              className="w-1/2 text-sm sm:text-base py-3"
+              style={{ 
+                borderColor: '#01558E', 
+                color: route.direction === "toHalifax" ? 'white' : '#01558E',
+                backgroundColor: route.direction === "toHalifax" ? '#01558E' : 'transparent'
+              }}
+            >
+              To Halifax
+            </ToggleGroupItem>
+            <ToggleGroupItem 
+              value="fromHalifax" 
+              className="w-1/2 text-sm sm:text-base py-3"
+              style={{ 
+                borderColor: '#01558E', 
+                color: route.direction === "fromHalifax" ? 'white' : '#01558E',
+                backgroundColor: route.direction === "fromHalifax" ? '#01558E' : 'transparent'
+              }}
+            >
+              To Dartmouth
+            </ToggleGroupItem>
+          </ToggleGroup>
       </footer>
-    </div>
+    </main>
   );
 }
