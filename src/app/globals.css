@@ -49,71 +49,73 @@
 
 @layer base {
   :root {
-    --background: 203 98% 28%; /* #01558E */
-    --foreground: 0 0% 98%;   /* White text */
+    /* Light mode - white background with Halifax blue accents */
+    --background: 0 0% 100%; /* White */
+    --foreground: 203 98% 28%; /* Halifax blue #01558E */
 
-    --card: 203 98% 23%; /* Darker blue for toggle background */
-    --card-foreground: 0 0% 98%;
+    --card: 0 0% 96%; /* Light gray for cards */
+    --card-foreground: 203 98% 28%;
 
-    --popover: 203 98% 23%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 203 98% 28%;
 
-    /* Main countdown number */
-    --primary: 0 0% 98%; /* White */
-    --primary-foreground: 203 98% 28%; 
+    /* Main countdown number - Halifax blue */
+    --primary: 203 98% 28%; /* #01558E */
+    --primary-foreground: 0 0% 100%; /* White text on blue */
 
     --secondary: 0 0% 96.1%;
     --secondary-foreground: 0 0% 9%;
 
     /* Subtitles like 'minutes', 'at 15:30' */
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 75%; /* Lighter grey for better contrast on blue */
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45%;
 
-    /* Selected tab style */
-    --accent: 0 0% 100%; /* White background for selected tab */
-    --accent-foreground: 203 98% 28%; /* Blue text for selected tab */
+    /* Selected tab style - Halifax blue background */
+    --accent: 203 98% 28%; /* Blue background for selected tab */
+    --accent-foreground: 0 0% 100%; /* White text for selected tab */
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 203 98% 33%; /* Slightly lighter blue for borders */
-    --input: 203 98% 33%;
-    --ring: 0 0% 83.1%;
+    --border: 203 50% 80%; /* Light blue border */
+    --input: 203 50% 80%;
+    --ring: 203 98% 28%;
 
     --radius: 0.5rem;
   }
 
   .dark {
-    --background: 203 98% 28%; /* #01558E */
-    --foreground: 0 0% 98%;   /* White text */
+    /* Dark mode - dark background with Halifax blue accents */
+    --background: 222 47% 11%; /* Dark navy/black */
+    --foreground: 0 0% 98%; /* White text */
 
-    --card: 203 98% 23%; /* Darker blue for toggle background */
+    --card: 222 47% 15%; /* Slightly lighter than background */
     --card-foreground: 0 0% 98%;
 
-    --popover: 203 98% 23%;
+    --popover: 222 47% 15%;
     --popover-foreground: 0 0% 98%;
 
-    /* Main countdown number */
-    --primary: 0 0% 98%; /* White */
-    --primary-foreground: 203 98% 28%; 
+    /* Main countdown number - Light/white for visibility */
+    --primary: 203 98% 55%; /* Lighter Halifax blue */
+    --primary-foreground: 222 47% 11%; /* Dark text on light blue */
 
-    --secondary: 0 0% 14.9%;
+    --secondary: 222 47% 15%;
     --secondary-foreground: 0 0% 98%;
 
     /* Subtitles like 'minutes', 'at 15:30' */
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 75%; /* Lighter grey for better contrast on blue */
+    --muted: 222 47% 15%;
+    --muted-foreground: 0 0% 70%;
 
-    /* Selected tab style */
-    --accent: 0 0% 100%; /* White background for selected tab */
-    --accent-foreground: 203 98% 28%; /* Blue text for selected tab */
+    /* Selected tab style - Halifax blue */
+    --accent: 203 98% 45%; /* Medium Halifax blue for selected tab */
+    --accent-foreground: 0 0% 100%; /* White text */
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 203 98% 33%; /* Slightly lighter blue for borders */
-    --input: 203 98% 33%;
-    --ring: 0 0% 83.1%;
+    --border: 222 47% 20%; /* Subtle border */
+    --input: 222 47% 20%;
+    --ring: 203 98% 45%;
   }
 }
 
@@ -127,14 +129,20 @@
 }
 
 @layer components {
-  /* Custom toggle button styling for the new color scheme */
+  /* Custom toggle button styling using theme variables */
   [data-state="on"] {
-    background-color: #01558E !important;
-    color: white !important;
-    border-color: #01558E !important;
+    background-color: hsl(var(--accent)) !important;
+    color: hsl(var(--accent-foreground)) !important;
+    border-color: hsl(var(--accent)) !important;
   }
-  
+
+  [data-state="off"] {
+    background-color: transparent !important;
+    color: hsl(var(--foreground)) !important;
+    border-color: hsl(var(--border)) !important;
+  }
+
   [data-state="off"]:hover {
-    background-color: rgba(1, 85, 142, 0.1) !important;
+    background-color: hsl(var(--muted)) !important;
   }
 }

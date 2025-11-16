@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { schedules, DayCategory, RouteName, Direction } from "@/lib/schedule";
 
 type Route = {
@@ -119,18 +120,18 @@ export default function Home() {
   }
 
   return (
-    <main 
-      className="flex flex-col"
-      style={{ 
-        backgroundColor: '#ffffff', 
-        color: '#01558E',
-        height: '100dvh', // Dynamic viewport height - excludes browser UI
+    <main
+      className="flex flex-col bg-background text-foreground h-[100dvh]"
+      style={{
         paddingTop: 'env(safe-area-inset-top, 0px)',
         paddingBottom: 'env(safe-area-inset-bottom, 0px)'
       }}
     >
       {/* Fixed Header - Always at top */}
-      <header className="flex-shrink-0 w-full" style={{ paddingTop: '20px', paddingBottom: '10px' }}>
+      <header className="flex-shrink-0 w-full pt-5 pb-2.5 relative">
+        <div className="absolute top-5 right-4">
+          <ThemeToggle />
+        </div>
         <Image
           src="/halifax-regional-municipality-logo-png_seeklogo-504971 (1).png"
           alt="Halifax Regional Municipality Logo"
@@ -143,10 +144,10 @@ export default function Home() {
 
       {/* Scrollable Content - Takes remaining space */}
       <div className="flex-1 flex flex-col items-center justify-center text-center px-4 overflow-y-auto min-h-0">
-        <h1 className="text-2xl sm:text-3xl font-bold" style={{ color: '#01558E' }}>
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
           {route.name === "alderney" ? "Alderney" : "Woodside"} Ferry
         </h1>
-        <p className="text-sm sm:text-base mt-1" style={{ color: '#01558E' }}>
+        <p className="text-sm sm:text-base mt-1 text-foreground">
           {route.direction === "toHalifax"
             ? "to Halifax Ferry Terminal"
             : `from Halifax to ${
@@ -157,15 +158,15 @@ export default function Home() {
         <div className="mt-2 sm:mt-4 text-center">
             {minutesUntil !== null ? (
                 <>
-                    <p className="text-base sm:text-lg" style={{ color: '#01558E' }}>Next departure in</p>
-                    <p className="text-8xl sm:text-9xl font-bold tracking-tighter -my-1" style={{ color: '#01558E' }}>
+                    <p className="text-base sm:text-lg text-foreground">Next departure in</p>
+                    <p className="text-8xl sm:text-9xl font-bold tracking-tighter -my-1 text-primary">
                         {minutesUntil}
                     </p>
-                    <p className="text-base sm:text-lg" style={{ color: '#01558E' }}>minutes</p>
-                    <p className="text-sm sm:text-base mt-1" style={{ color: '#01558E' }}>at {nextFerry}</p>
+                    <p className="text-base sm:text-lg text-foreground">minutes</p>
+                    <p className="text-sm sm:text-base mt-1 text-foreground">at {nextFerry}</p>
                 </>
             ) : (
-                <p className="text-xl sm:text-2xl font-bold" style={{ color: '#dc2626' }}>
+                <p className="text-xl sm:text-2xl font-bold text-destructive">
                     No more ferries today.
                 </p>
             )}
@@ -182,25 +183,15 @@ export default function Home() {
             }}
             className="w-full"
           >
-            <ToggleGroupItem 
-              value="alderney" 
-              className="w-1/2 text-sm sm:text-base py-3"
-              style={{ 
-                borderColor: '#01558E', 
-                color: route.name === "alderney" ? 'white' : '#01558E',
-                backgroundColor: route.name === "alderney" ? '#01558E' : 'transparent'
-              }}
+            <ToggleGroupItem
+              value="alderney"
+              className="w-1/2 text-sm sm:text-base py-3 border"
             >
               Alderney
             </ToggleGroupItem>
-            <ToggleGroupItem 
-              value="woodside" 
-              className="w-1/2 text-sm sm:text-base py-3"
-              style={{ 
-                borderColor: '#01558E', 
-                color: route.name === "woodside" ? 'white' : '#01558E',
-                backgroundColor: route.name === "woodside" ? '#01558E' : 'transparent'
-              }}
+            <ToggleGroupItem
+              value="woodside"
+              className="w-1/2 text-sm sm:text-base py-3 border"
             >
               Woodside
             </ToggleGroupItem>
@@ -214,25 +205,15 @@ export default function Home() {
             }}
             className="w-full"
           >
-            <ToggleGroupItem 
-              value="toHalifax" 
-              className="w-1/2 text-sm sm:text-base py-3"
-              style={{ 
-                borderColor: '#01558E', 
-                color: route.direction === "toHalifax" ? 'white' : '#01558E',
-                backgroundColor: route.direction === "toHalifax" ? '#01558E' : 'transparent'
-              }}
+            <ToggleGroupItem
+              value="toHalifax"
+              className="w-1/2 text-sm sm:text-base py-3 border"
             >
               To Halifax
             </ToggleGroupItem>
-            <ToggleGroupItem 
-              value="fromHalifax" 
-              className="w-1/2 text-sm sm:text-base py-3"
-              style={{ 
-                borderColor: '#01558E', 
-                color: route.direction === "fromHalifax" ? 'white' : '#01558E',
-                backgroundColor: route.direction === "fromHalifax" ? '#01558E' : 'transparent'
-              }}
+            <ToggleGroupItem
+              value="fromHalifax"
+              className="w-1/2 text-sm sm:text-base py-3 border"
             >
               To Dartmouth
             </ToggleGroupItem>
