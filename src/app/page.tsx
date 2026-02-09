@@ -35,19 +35,80 @@ export default function Home() {
     }
   }, [route, isClient]);
 
+  const getEasterSunday = (year: number): Date => {
+    // Anonymous Gregorian algorithm for Easter date
+    const a = year % 19;
+    const b = Math.floor(year / 100);
+    const c = year % 100;
+    const d = Math.floor(b / 4);
+    const e = b % 4;
+    const f = Math.floor((b + 8) / 25);
+    const g = Math.floor((b - f + 1) / 3);
+    const h = (19 * a + b - d - g + 15) % 30;
+    const i = Math.floor(c / 4);
+    const k = c % 4;
+    const l = (32 + 2 * e + 2 * i - h - k) % 7;
+    const m = Math.floor((a + 11 * h + 22 * l) / 451);
+    const month = Math.floor((h + l - 7 * m + 114) / 31);
+    const day = ((h + l - 7 * m + 114) % 31) + 1;
+    return new Date(year, month - 1, day);
+  };
+
+  const getNthWeekdayOfMonth = (year: number, month: number, weekday: number, n: number): Date => {
+    const first = new Date(year, month, 1);
+    const firstWeekday = first.getDay();
+    let day = 1 + ((weekday - firstWeekday + 7) % 7) + (n - 1) * 7;
+    return new Date(year, month, day);
+  };
+
+  const getLastMondayBefore = (year: number, month: number, beforeDay: number): Date => {
+    const target = new Date(year, month, beforeDay);
+    const day = target.getDay();
+    const diff = day === 0 ? 6 : day - 1; // days since last Monday
+    return new Date(year, month, beforeDay - diff);
+  };
+
+  const isSameDate = (a: Date, b: Date): boolean =>
+    a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+
   const getDayCategory = (date: Date): DayCategory => {
-    const day = date.getDay();
-    // Basic holiday check - can be expanded
-    // For now, only checking for a few major ones.
-    const holidays = [
-      "01-01", // New Year's Day
-      "12-25", // Christmas Day
-      "12-26", // Boxing Day
+    const year = date.getFullYear();
+    const month = date.getMonth(); // 0-indexed
+    const dayOfMonth = date.getDate();
+    const dayOfWeek = date.getDay();
+
+    // No-service days: no ferry service at all
+    const noServiceFixed = [
+      { month: 0, day: 1 },   // New Year's Day
+      { month: 11, day: 25 }, // Christmas Day
     ];
-    const dateString = `${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
-    if (holidays.includes(dateString)) return "holiday";
-    if (day === 0) return "sunday";
-    if (day === 6) return "saturday";
+    for (const h of noServiceFixed) {
+      if (month === h.month && dayOfMonth === h.day) return "no-service";
+    }
+
+    const easterSunday = getEasterSunday(year);
+    const goodFriday = new Date(easterSunday);
+    goodFriday.setDate(easterSunday.getDate() - 2);
+
+    if (isSameDate(date, goodFriday)) return "no-service";
+    if (isSameDate(date, easterSunday)) return "no-service";
+
+    // Holiday-schedule days: reduced 30-min service on Alderney
+    const holidayDates: Date[] = [
+      getNthWeekdayOfMonth(year, 1, 1, 3),  // Family Day: 3rd Monday of February
+      getLastMondayBefore(year, 4, 25),      // Victoria Day: last Monday before May 25
+      new Date(year, 6, 1),                   // Canada Day: July 1
+      getNthWeekdayOfMonth(year, 7, 1, 1),   // Civic Holiday: 1st Monday of August
+      getNthWeekdayOfMonth(year, 8, 1, 1),   // Labour Day: 1st Monday of September
+      getNthWeekdayOfMonth(year, 9, 1, 2),   // Thanksgiving: 2nd Monday of October
+      new Date(year, 10, 11),                  // Remembrance Day: November 11
+    ];
+    for (const h of holidayDates) {
+      if (isSameDate(date, h)) return "holiday";
+    }
+
+    if (dayOfWeek === 0) return "sunday";
+    if (dayOfWeek === 6) return "saturday";
     return "weekday";
   };
   

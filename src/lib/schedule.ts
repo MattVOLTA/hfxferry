@@ -1,4 +1,4 @@
-export type DayCategory = 'weekday' | 'saturday' | 'sunday' | 'holiday';
+export type DayCategory = 'weekday' | 'saturday' | 'sunday' | 'holiday' | 'no-service';
 
 export type RouteName = 'alderney' | 'woodside';
 export type Direction = 'toHalifax' | 'fromHalifax';
@@ -128,7 +128,7 @@ const alderneySchedule: Record<DayCategory, Record<Direction, Schedule>> = {
       main: {
         times: [],
         frequency: {
-          start: '10:00',
+          start: '07:30',
           end: '23:30',
           interval: 30
         }
@@ -138,12 +138,16 @@ const alderneySchedule: Record<DayCategory, Record<Direction, Schedule>> = {
       main: {
         times: [],
         frequency: {
-          start: '10:12',
-          end: '23:42',
+          start: '07:45',
+          end: '23:45',
           interval: 30
         }
       }
     }
+  },
+  'no-service': {
+    toHalifax: { main: { times: [] } },
+    fromHalifax: { main: { times: [] } },
   },
 };
 
@@ -191,6 +195,10 @@ const woodsideSchedule: Record<DayCategory, Record<Direction, Schedule>> = {
     fromHalifax: { main: { times: [] } },
   },
   holiday: {
+    toHalifax: { main: { times: [] } },
+    fromHalifax: { main: { times: [] } },
+  },
+  'no-service': {
     toHalifax: { main: { times: [] } },
     fromHalifax: { main: { times: [] } },
   },
