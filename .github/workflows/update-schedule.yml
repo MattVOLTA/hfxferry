@@ -1,7 +1,7 @@
 name: Update GTFS Schedule
 on:
   schedule:
-    - cron: '0 6 * * 1'
+    - cron: '0 6 * * *'
   workflow_dispatch: {}
 
 jobs:
@@ -14,7 +14,25 @@ jobs:
           node-version: '20'
       - run: npm ci
       - run: npm run generate-schedule
-      - uses: stefanzweifel/git-auto-commit-action@v5
+
+      - name: Check for changes
+        id: changes
+        run: |
+          if git diff --quiet src/generated/schedule-data.json; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit updated schedule
+        if: steps.changes.outputs.changed == 'true'
+        uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: 'chore: update GTFS schedule data'
           file_pattern: src/generated/schedule-data.json
+
+      - name: Trigger Vercel deploy
+        if: steps.changes.outputs.changed == 'true' && env.VERCEL_DEPLOY_HOOK != ''
+        env:
+          VERCEL_DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
+        run: curl -s -X POST "$VERCEL_DEPLOY_HOOK"
