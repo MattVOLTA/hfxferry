@@ -31,8 +31,8 @@ jobs:
           commit_message: 'chore: update GTFS schedule data'
           file_pattern: src/generated/schedule-data.json
 
-      - name: Trigger Vercel deploy
-        if: steps.changes.outputs.changed == 'true' && env.VERCEL_DEPLOY_HOOK != ''
+      - name: Trigger Netlify deploy
+        if: steps.changes.outputs.changed == 'true' && env.NETLIFY_BUILD_HOOK != ''
         env:
-          VERCEL_DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
-        run: curl -s -X POST "$VERCEL_DEPLOY_HOOK"
+          NETLIFY_BUILD_HOOK: ${{ secrets.NETLIFY_BUILD_HOOK }}
+        run: curl -s -X POST "$NETLIFY_BUILD_HOOK"
