@@ -1,231 +1,90 @@
 export type DayCategory = 'weekday' | 'saturday' | 'sunday' | 'holiday';
-
 export type RouteName = 'alderney' | 'woodside';
 export type Direction = 'toHalifax' | 'fromHalifax';
 
-export interface Schedule {
-  [key: string]: {
-    times: string[];
-    frequency?: {
-      start: string;
-      end: string;
-      interval: number;
-    };
-  };
+interface Band {
+  start: string;
+  end: string;
+  intervalMin: number;
 }
 
-const alderneySchedule: Record<DayCategory, Record<Direction, Schedule>> = {
-  weekday: {
-    toHalifax: {
-      morning: {
-        times: [
-          '06:30', '07:00', '07:15', '07:30', '07:45', '08:00', '08:15', '08:30', '08:45',
-          '09:00', '09:15', '09:30', '09:45', '10:00',
-        ],
-      },
-      midday: {
-        times: [],
-        frequency: {
-          start: '10:15',
-          end: '19:15',
-          interval: 15,
-        },
-      },
-      evening: {
-        times: [
-          '19:30', '20:00', '20:30', '21:00', '21:30', '22:00', '22:30', '23:00',
-        ],
-      },
-    },
-    fromHalifax: {
-      morning: {
-        times: [
-          '06:42', '07:12', '07:27', '07:42', '07:57', '08:12', '08:27', '08:42',
-          '08:57', '09:12', '09:27', '09:42', '09:57', '10:12',
-        ],
-      },
-      midday: {
-        times: [],
-        frequency: {
-          start: '10:27',
-          end: '19:27',
-          interval: 15,
-        },
-      },
-      evening: {
-        times: [
-          '19:42', '20:12', '20:42', '21:12', '21:42', '22:12', '22:42', '23:12',
-        ],
-      },
-    },
-  },
-  saturday: {
-    toHalifax: {
-      main: {
-        times: [
-          '06:30', '07:00', '07:30', '08:00',
-        ],
-      },
-      frequent: {
-        times: [],
-        frequency: {
-          start: '08:30',
-          end: '23:30',
-          interval: 30,
-        },
-      }
-    },
-    fromHalifax: {
-      main: {
-        times: [
-          '06:42', '07:12', '07:42', '08:12',
-        ],
-      },
-      frequent: {
-        times: [],
-        frequency: {
-          start: '08:42',
-          end: '23:42',
-          interval: 30,
-        }
-      }
-    },
-  },
-  sunday: {
-    toHalifax: {
-      main: {
-        times: [
-          '06:45', '07:15', '07:45', '08:15',
-        ],
-      },
-      frequent: {
-        times: [],
-        frequency: {
-          start: '08:45',
-          end: '23:45',
-          interval: 30,
-        }
-      }
-    },
-    fromHalifax: {
-      main: {
-        times: [
-          '06:57', '07:27', '07:57', '08:27',
-        ],
-      },
-      frequent: {
-        times: [],
-        frequency: {
-          start: '08:57',
-          end: '23:57',
-          interval: 30,
-        }
-      }
-    },
-  },
-  holiday: {
-    toHalifax: {
-      main: {
-        times: [],
-        frequency: {
-          start: '10:00',
-          end: '23:30',
-          interval: 30
-        }
-      }
-    },
-    fromHalifax: {
-      main: {
-        times: [],
-        frequency: {
-          start: '10:12',
-          end: '23:42',
-          interval: 30
-        }
-      }
-    }
+interface RouteConfig {
+  crossingMin: number;
+  halifaxOffsetMin: number;
+  bands: Record<DayCategory, Band[]>;
+}
+
+const ALDERNEY: RouteConfig = {
+  crossingMin: 12,
+  halifaxOffsetMin: 15,
+  bands: {
+    weekday: [
+      { start: '06:30', end: '06:30', intervalMin: 30 },
+      { start: '07:00', end: '20:00', intervalMin: 15 },
+      { start: '20:30', end: '23:30', intervalMin: 30 },
+    ],
+    saturday: [
+      { start: '06:30', end: '23:30', intervalMin: 30 },
+    ],
+    sunday: [
+      { start: '06:30', end: '23:30', intervalMin: 30 },
+    ],
+    holiday: [
+      { start: '07:30', end: '23:30', intervalMin: 30 },
+    ],
   },
 };
 
-const woodsideSchedule: Record<DayCategory, Record<Direction, Schedule>> = {
-  weekday: {
-    toHalifax: {
-      main: {
-        times: [
-          '06:37', '06:52', '07:07', '07:22', '07:37', '07:52', '08:07', '08:22',
-          '08:37', '08:52', '09:07', '09:22', '09:37', '09:52', '10:07', '10:22', '10:37',
-        ],
-      },
-      frequent: {
-        times: [],
-        frequency: {
-          start: '10:52',
-          end: '20:37',
-          interval: 30,
-        }
-      }
-    },
-    fromHalifax: {
-      main: {
-        times: [
-          '06:49', '07:04', '07:19', '07:34', '07:49', '08:04', '08:19', '08:34', '08:49',
-          '09:04', '09:19', '09:34', '09:49', '10:04', '10:19', '10:34', '10:49',
-        ],
-      },
-      frequent: {
-        times: [],
-        frequency: {
-          start: '11:04',
-          end: '21:04',
-          interval: 30
-        }
-      }
-    },
-  },
-  saturday: {
-    toHalifax: { main: { times: [] } },
-    fromHalifax: { main: { times: [] } },
-  },
-  sunday: {
-    toHalifax: { main: { times: [] } },
-    fromHalifax: { main: { times: [] } },
-  },
-  holiday: {
-    toHalifax: { main: { times: [] } },
-    fromHalifax: { main: { times: [] } },
+const WOODSIDE: RouteConfig = {
+  crossingMin: 12,
+  halifaxOffsetMin: 15,
+  bands: {
+    weekday: [
+      { start: '06:37', end: '18:37', intervalMin: 30 },
+    ],
+    saturday: [],
+    sunday: [],
+    holiday: [],
   },
 };
 
+const toMinutes = (hhmm: string): number => {
+  const [h, m] = hhmm.split(':').map(Number);
+  return h * 60 + m;
+};
 
-const generateTimes = (start: string, end: string, interval: number): string[] => {
+const fromMinutes = (mins: number): string => {
+  const h = Math.floor(mins / 60).toString().padStart(2, '0');
+  const m = (mins % 60).toString().padStart(2, '0');
+  return `${h}:${m}`;
+};
+
+const expandBand = ({ start, end, intervalMin }: Band): string[] => {
+  const startMin = toMinutes(start);
+  const endMin = toMinutes(end);
+  if (startMin === endMin) return [start];
   const times: string[] = [];
-  const currentTime = new Date(`1970-01-01T${start}:00`);
-  const endTime = new Date(`1970-01-01T${end}:00`);
-
-  while (currentTime <= endTime) {
-    times.push(
-      currentTime.toTimeString().slice(0, 5)
-    );
-    currentTime.setMinutes(currentTime.getMinutes() + interval);
+  for (let t = startMin; t <= endMin; t += intervalMin) {
+    times.push(fromMinutes(t));
   }
   return times;
 };
 
-const processSchedule = (schedule: Record<DayCategory, Record<Direction, Schedule>>) => {
-  for (const dayCategory in schedule) {
-    for (const direction in schedule[dayCategory as DayCategory]) {
-      for (const period in schedule[dayCategory as DayCategory][direction as Direction]) {
-        const p = schedule[dayCategory as DayCategory][direction as Direction][period];
-        if (p.frequency) {
-          p.times.push(...generateTimes(p.frequency.start, p.frequency.end, p.frequency.interval));
-        }
-      }
-    }
-  }
-  return schedule;
-}
+const shift = (times: string[], offsetMin: number): string[] =>
+  times.map(t => fromMinutes(toMinutes(t) + offsetMin));
 
-export const schedules = {
-  alderney: processSchedule(alderneySchedule),
-  woodside: processSchedule(woodsideSchedule),
-}; 
+const buildRoute = (config: RouteConfig): Record<DayCategory, Record<Direction, string[]>> => {
+  const days: DayCategory[] = ['weekday', 'saturday', 'sunday', 'holiday'];
+  return Object.fromEntries(
+    days.map(day => {
+      const departuresFromDartmouth = config.bands[day].flatMap(expandBand);
+      const departuresFromHalifax = shift(departuresFromDartmouth, config.halifaxOffsetMin);
+      return [day, { toHalifax: departuresFromDartmouth, fromHalifax: departuresFromHalifax }];
+    }),
+  ) as Record<DayCategory, Record<Direction, string[]>>;
+};
+
+export const schedules: Record<RouteName, Record<DayCategory, Record<Direction, string[]>>> = {
+  alderney: buildRoute(ALDERNEY),
+  woodside: buildRoute(WOODSIDE),
+};

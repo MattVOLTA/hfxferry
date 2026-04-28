@@ -54,17 +54,8 @@ export default function Home() {
   useEffect(() => {
     const getDepartureTimes = (now: Date, forDate: Date, route: Route): string[] => {
       const dayCategory = getDayCategory(forDate);
-      const scheduleForDay = schedules[route.name][dayCategory]?.[route.direction];
-      if (!scheduleForDay) return [];
-
-      const allTimes: string[] = [];
-      Object.values(scheduleForDay).forEach(period => {
-          allTimes.push(...period.times);
-      });
-      
-      allTimes.sort();
-      
-      return allTimes;
+      const times = schedules[route.name][dayCategory]?.[route.direction];
+      return times ? [...times].sort() : [];
     };
 
     const calculateNextFerry = () => {
